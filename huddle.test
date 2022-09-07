@@ -393,6 +393,84 @@ test huddle-12.0 {ticket [d0e1cf6be1]: jsondump added types} -setup {
   "b": true
 }}
 
+# Tests of `isHuddle`
+# ------------------
+test huddle-13.1.1 "test of huddle isHuddle" -body {
+    huddle isHuddle {}
+} -result 0
+
+test huddle-13.1.2 "test of huddle isHuddle" -body {
+    huddle isHuddle {HUDDLE}
+} -result 0
+
+test huddle-13.1.3 "test of huddle isHuddle" -body {
+    huddle isHuddle {HUDDLE {}}
+} -result 0
+
+test huddle-13.1.4 "test of huddle isHuddle" -body {
+    huddle isHuddle {HUDDLE {s string}}
+} -result 1
+
+test huddle-13.1.5 "test of huddle isHuddle" -body {
+    huddle isHuddle {HUDDLE null}
+} -result 1
+
+test huddle-13.1.6 "test of huddle isHuddle" -body {
+    huddle isHuddle {HUDDLE {b true}}
+} -result 1
+
+test huddle-13.1.7 "test of huddle isHuddle" -body {
+    huddle isHuddle {HUDDLE {b false}}
+} -result 1
+
+test huddle-13.1.8 "test of huddle isHuddle" -body {
+    huddle isHuddle {HUDDLE {num -4.5E-6}}
+} -result 1
+
+test huddle-13.1.9 "test of huddle isHuddle" -body {
+    huddle isHuddle {HUDDLE {unknown whatever}}
+} -result 0
+
+test huddle-13.1.10 "test of huddle isHuddle" -body {
+    huddle isHuddle {HUDDLE unknown}
+} -result 0
+
+test huddle-13.1.11 "test of huddle isHuddle" -body {
+    # malformed string
+    huddle isHuddle {HUDDLE s}
+} -result 0
+
+# Tests of `huddle::strip_node`
+# -----------------------------
+test huddle-13.2.1 "test of huddle::strip_node" -body {
+    huddle::strip_node {s string}
+} -result {string}
+
+test huddle-13.2.2 "test of huddle::strip_node" -body {
+    huddle::strip_node {null}
+} -result {}
+
+test huddle-13.2.3 "test of huddle::strip_node" -body {
+    huddle::strip_node {b true}
+} -result {true}
+
+test huddle-13.2.4 "test of huddle::strip_node" -body {
+    huddle::strip_node {b false}
+} -result {false}
+
+test huddle-13.2.5 "test of huddle::strip_node" -body {
+    huddle::strip_node {num 5.0}
+} -result {5.0}
+
+test huddle-13.2.6 "test of huddle::strip_node" -body {
+    huddle::strip_node {unknown whatever}
+} -returnCodes {error} -result {This head 'unknown' doesn't exists.}
+
+test huddle-13.2.7 "test of huddle::strip_node" -body {
+    huddle::strip_node {}
+} -returnCodes {error} -result {This head '' doesn't exists.}
+
+
 # --------------------------------------------------------------------
 
 if {[info exists selfrun]} {
