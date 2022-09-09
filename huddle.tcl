@@ -82,7 +82,7 @@ proc huddle::addType {typeNamespace} {
         }
     "
 
-    set huddle_map [namespace ensemble configure ::huddle -map]
+    set huddle_map [namespace ensemble configure ${nscurr} -map]
 
     dict with settings {
         foreach subcommand $publicMethods {
@@ -99,7 +99,7 @@ proc huddle::addType {typeNamespace} {
         set types(tagOfType:$typeName) $tag
     }
 
-    namespace ensemble configure ::huddle -map $huddle_map
+    namespace ensemble configure ${nscurr} -map $huddle_map
     return
 }
 
@@ -635,7 +635,7 @@ proc huddle::compile {spec data} {
     }
 }
 
-apply {{selfdir} {
+apply [list {selfdir} {
     source [file join $selfdir huddle_types.tcl]
 
     foreach typeNamespace [namespace children huddle::types] {
@@ -643,5 +643,5 @@ apply {{selfdir} {
     }
 
     return
-} } [file dirname [file normalize [info script]]]
+} [namespace current]] [file dirname [file normalize [info script]]]
 return
