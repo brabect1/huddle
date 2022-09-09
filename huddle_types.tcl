@@ -1,4 +1,4 @@
-namespace eval ::huddle::types {
+namespace eval huddle::types {
     namespace export *
     
     namespace eval dict {
@@ -263,7 +263,7 @@ namespace eval ::huddle::types {
         }
         
         proc true {} {
-            return [::huddle::wrap [list b true]]
+            return [huddle::wrap [list b true]]
         }
         
         proc false {} {

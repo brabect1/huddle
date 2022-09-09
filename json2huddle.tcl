@@ -9,17 +9,17 @@ package require huddle 0.1.7
 package provide huddle::json 0.1
 
 
-namespace eval ::huddle {
+namespace eval huddle {
     namespace export json2huddle
 
     proc json2huddle {jsonText} {
-        set huddle_object [::huddle::json::json2huddle parse $jsonText]
+        set huddle_object [huddle::json::json2huddle parse $jsonText]
         return $huddle_object
     }
 }
 
     
-namespace eval ::huddle::json {
+namespace eval huddle::json {
     
     oo::class create Json2huddle {
         
@@ -154,7 +154,7 @@ namespace eval ::huddle::json {
             my assertNext r true
             my assertNext u true
             my assertNext e true
-            return [::huddle true]
+            return [huddle true]
         }
     
         
@@ -164,7 +164,7 @@ namespace eval ::huddle::json {
             my assertNext l false
             my assertNext s false
             my assertNext e false
-            return [::huddle false]
+            return [huddle false]
         }
     
         
@@ -173,7 +173,7 @@ namespace eval ::huddle::json {
             my assertNext u null
             my assertNext l null
             my assertNext l null
-            return [::huddle null]
+            return [huddle null]
         }
         
         method readComment {} {
