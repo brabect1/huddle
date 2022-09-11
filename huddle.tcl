@@ -306,7 +306,7 @@ proc huddle::exists {huddle_object args} {
 proc huddle::equal {obj1 obj2} {
     checkHuddle $obj1
     checkHuddle $obj2
-    return [huddle::are_equal_nodes [unwrap $obj1] [unwrap $obj2]]
+    return [are_equal_nodes [unwrap $obj1] [unwrap $obj2]]
 }
 
 proc huddle::are_equal_nodes {node1 node2} {
@@ -375,7 +375,7 @@ proc huddle::remove_node {node len path} {
             foreach item [$types(callback:$tag) items $src] {
                 foreach {key subnode} $item break
                 if {$key eq $first_key_to_removed_subnode} {
-                    set modified_subnode [huddle::remove_node $subnode $len $subpath_to_removed_subnode]
+                    set modified_subnode [remove_node $subnode $len $subpath_to_removed_subnode]
                     $types(callback:$tag) set new_src $key $modified_subnode
                 } else {
                     set cloned_subnode [Clone_node $subnode]
@@ -461,7 +461,7 @@ proc huddle::Apply_to_subnode {subcommand node_var len path {subcommand_argument
             # Now refcount of $subnode is 1
             $types(callback:$tag) delete_subnode_but_not_key src $key
 
-            huddle::Apply_to_subnode $subcommand subnode $len $subpath $subcommand_arguments
+            Apply_to_subnode $subcommand subnode $len $subpath $subcommand_arguments
 
             # We add again the new $subnode to the original $src
             $types(callback:$tag) set src $key $subnode
