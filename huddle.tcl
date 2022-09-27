@@ -487,18 +487,18 @@ proc huddle::jsondump {huddle_object {offset "  "} {newline "\n"} {begin ""}} {
     set sp " "
     if {[string equal $offset ""]} {set sp ""}
 
-    set type [huddle type $huddle_object]
+    set type [[namespace current] type $huddle_object]
 
     switch -- $type {
         boolean -
         number {
-            return [huddle get_stripped $huddle_object]
+            return [[namespace current] get_stripped $huddle_object]
         }
 	null {
 	    return null
 	}
         string {
-            set data [huddle get_stripped $huddle_object]
+            set data [[namespace current] get_stripped $huddle_object]
 
             # JSON permits only oneline string
             set data [string map {
@@ -516,9 +516,9 @@ proc huddle::jsondump {huddle_object {offset "  "} {newline "\n"} {begin ""}} {
         }
         list {
             set inner {}
-            set len [huddle llength $huddle_object]
+            set len [[namespace current] llength $huddle_object]
             for {set i 0} {$i < $len} {incr i} {
-                set subobject [huddle get $huddle_object $i]
+                set subobject [[namespace current] get $huddle_object $i]
                 lappend inner [jsondump $subobject $offset $newline $nextoff]
             }
             if {[llength $inner] == 1} {
@@ -528,8 +528,8 @@ proc huddle::jsondump {huddle_object {offset "  "} {newline "\n"} {begin ""}} {
         }
         dict {
             set inner {}
-            foreach {key} [huddle keys $huddle_object] {
-                lappend inner [subst {"$key":$sp[jsondump [huddle get $huddle_object $key] $offset $newline $nextoff]}]
+            foreach {key} [[namespace current] keys $huddle_object] {
+                lappend inner [subst {"$key":$sp[jsondump [[namespace current] get $huddle_object $key] $offset $newline $nextoff]}]
             }
             if {[llength $inner] == 1} {
                 return $inner
@@ -566,7 +566,7 @@ proc huddle::compile {spec data} {
                     lappend spec * string
                 }
 
-                set result [huddle create]
+                set result [[namespace current] create]
                 foreach {key value} $data {
                     foreach {matching_key subspec} $spec {
                         if {[string match $matching_key $key]} {
@@ -586,7 +586,7 @@ proc huddle::compile {spec data} {
                     set spec [lindex $spec 0]
                 }
                 
-                set result [huddle list]
+                set result [[namespace current] list]
                 foreach list_item $data {
                     Append result [compile $spec $list_item]
                 }
