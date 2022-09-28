@@ -470,6 +470,53 @@ test huddle-13.2.7 "test of huddle::strip_node" -body {
     huddle::strip_node {}
 } -returnCodes {error} -result {This head '' doesn't exists.}
 
+# Tests od `huddle::Visit_node_depth_first`
+# -----------------------------------------
+
+# a callback that replicates Huddle structure
+#
+# TODO it is likely not to work for huddle list nodes
+#
+# Arguments:
+#   node_var - name of a huddle node variable in the caller's stack frame
+#   path - list of tokens making up a DB key
+#   args[0] - name of a Huddle object variable
+proc cb_rebuild {node_var path args} {
+    if {[llength $path] > 0} {
+        upvar 1 $node_var node;
+        namespace upvar huddle types types;
+        upvar 1 [lindex $args 0] obj;
+
+        lassign $node tag value;
+        if {$huddle::types(isContainer:$tag) eq "yes"} {
+            set subnode [huddle::argument_to_node {} $tag];
+        } else {
+            set subnode [huddle::argument_to_node $value $tag];
+        }
+
+        set root_node [huddle::unwrap $obj];
+        unset obj;
+
+        huddle::Apply_to_subnode set root_node [llength $path] $path $subnode;
+        set obj [huddle::wrap $root_node];
+    }
+
+    return {stop 0 ascend 0 repack 0};
+}
+
+# tests the Huddle tree walkthrough
+test huddle-14.1 "test of huddle::Visit_node_depth_first" -setup {
+    global h;
+    set h [huddle create];
+} -body {
+    set v {HUDDLE {D {a {D {b {D {c {s xyz}}}}} b {D {c {num 123}}} c {b false}}}};
+    set node [huddle unwrap $v];
+    huddle::Visit_node_depth_first ::cb_rebuild node {} ::h
+    return $h;
+} -cleanup {
+    unset h;
+} -result {HUDDLE {D {a {D {b {D {c {s xyz}}}}} b {D {c {num 123}}} c {b false}}}}
+
 
 # --------------------------------------------------------------------
 
