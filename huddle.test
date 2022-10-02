@@ -470,6 +470,124 @@ test huddle-13.2.7 "test of huddle::strip_node" -body {
     huddle::strip_node {}
 } -returnCodes {error} -result {This head '' doesn't exists.}
 
+# Tests of `huddle::compile`
+# --------------------------
+test huddle-13.3.1.1 "test of huddle compile (null, valid arg)" -body {
+    set exp {HUDDLE null}
+    set act [huddle compile null  ""]; # `data` argument to `compile null` must be an empty string
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.1.2 "test of huddle compile (null, invalid arg)" -body {
+    set act [huddle compile null  "foo"]; # `data` argument to `compile null` must be an empty string
+} -returnCodes {error} -result {Data must be an empty string: 'foo'}
+
+test huddle-13.3.2 "test of huddle compile (string)" -body {
+    set exp {HUDDLE {s {hello world}}}
+    set act [huddle compile string  "hello world"]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.3.1 "test of huddle compile (number)" -body {
+    set exp {HUDDLE {num -2.5}}
+    set act [huddle compile number  "-2.5"]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.3.2 "test of huddle compile (number, invalid)" -body {
+    set act [huddle compile number  "foo"]
+} -result {Bad number: foo} -returnCodes {error}
+
+test huddle-13.3.4.1 "test of huddle compile (boolean true)" -body {
+    set exp {HUDDLE {b true}}
+    set act [huddle compile boolean  "true"]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.4.2 "test of huddle compile (boolean false)" -body {
+    set exp {HUDDLE {b false}}
+    set act [huddle compile boolean  "false"]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.4.3 "test of huddle compile (boolean 0)" -body {
+    set exp {HUDDLE {b false}}
+    set act [huddle compile boolean  0]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.4.4 "test of huddle compile (boolean 1)" -body {
+    set exp {HUDDLE {b true}}
+    set act [huddle compile boolean  1]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.4.5 "test of huddle compile (boolean 10)" -body {
+    set exp {HUDDLE {b true}}
+    set act [huddle compile boolean  10]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.4.6 "test of huddle compile (boolean no)" -body {
+    set exp {HUDDLE {b false}}
+    set act [huddle compile boolean  "no"]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.4.7 "test of huddle compile (boolean yes)" -body {
+    set exp {HUDDLE {b true}}
+    set act [huddle compile boolean  "yes"]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.5.1 "test of huddle compile (huddle, empty huddle)" -body {
+    set exp {HUDDLE {D {}}}
+    set act [huddle compile huddle $exp]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.5.2 "test of huddle compile (huddle, empty string)" -body {
+    set act [huddle compile huddle {}]
+} -result {Data is not a huddle object: } -returnCodes {error}
+
+test huddle-13.3.5.3 "test of huddle compile (huddle, complex)" -body {
+    set exp {HUDDLE {D {s {s "hello world"} n {num 123} b {b true} l {L {{s a} {s b}}} d {D {}}}}};
+    set act [huddle compile huddle $exp]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.6.1 "test of huddle compile (unknown type)" -body {
+    set act [huddle compile foo "bar"]
+} -result {Invalid type: 'foo'} -returnCodes {error}
+
+test huddle-13.3.7.1 "test of huddle compile (list, default type)" -body {
+    set exp {HUDDLE {L {{s a} {s b} {s c}}}};
+    set act [huddle compile list {a b c}]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.7.2 "test of huddle compile (list, string type)" -body {
+    set exp {HUDDLE {L {{s a} {s b} {s c}}}};
+    set act [huddle compile {list string} {a b c}]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.7.3.1 "test of huddle compile (list, number type)" -body {
+    set exp {HUDDLE {L {{num 1} {num 2} {num 3}}}};
+    set act [huddle compile {list number} {1 2 3}]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.7.3.2 "test of huddle compile (list, number type, invalid arg)" -body {
+    set act [huddle compile {list number} {1 a 3}]
+} -result {Bad number: a} -returnCodes {error}
+
+test huddle-13.3.7.4 "test of huddle compile (list, boolean type)" -body {
+    set exp {HUDDLE {L {{b true} {b true} {b false}}}};
+    set act [huddle compile {list boolean} {1 yes FALSE}]
+    huddle equal $act $exp
+} -result {1}
+
 # Tests od `huddle::Visit_node_depth_first`
 # -----------------------------------------
 
