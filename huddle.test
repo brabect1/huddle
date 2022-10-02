@@ -588,6 +588,58 @@ test huddle-13.3.7.4 "test of huddle compile (list, boolean type)" -body {
     huddle equal $act $exp
 } -result {1}
 
+test huddle-13.3.8.1 "test of huddle compile (dict, default type)" -body {
+    set exp {HUDDLE {D {a {s 0} b {s 1} c {s 2}}}}
+    set act [huddle compile dict {a 0 b 1 c 2}]
+    huddle equal $act $exp
+} -result {1}
+
+test huddle-13.3.9.1 "test of huddle compile (custom type)" -setup {
+    # implement a custom type
+    namespace eval foo {
+        variable settings;
+
+        set settings {
+            publicMethods {foo}
+            tag foo
+            isContainer no
+        };
+
+        proc foo {src} {
+            return [::huddle::wrap [list foo $src]];
+        }
+
+        proc equal {p1 p2} {
+            return [expr {$p1 eq $p2}];
+        }
+
+        proc jsondump {data {offset "  "} {newline "\n"} {begin ""}} {
+            error "Not implemented!"
+        }
+
+        proc create {data} {
+            return [foo $data];
+        }
+    }
+
+    # backup huddle type definitions
+    array set bak_types [array get ::huddle::types]
+
+    # register the custom type
+    huddle addType ::foo
+} -body {
+    set exp {HUDDLE {foo bar}}
+    set act [huddle compile foo bar]
+    huddle equal $act $exp
+} -cleanup {
+    # delete the custom type
+    namespace delete foo;
+    # restore huddle type definitions
+    array unset ::huddle::types
+    array set ::huddle::types [array get bak_types]
+    array unset bak_types
+} -result {1}
+
 # Tests od `huddle::Visit_node_depth_first`
 # -----------------------------------------
 

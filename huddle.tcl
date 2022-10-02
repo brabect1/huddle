@@ -555,6 +555,7 @@ proc ::huddle::jsondump {huddle_object {offset "  "} {newline "\n"} {begin ""}} 
 # etc..
 
 proc ::huddle::compile {spec data} {
+    variable types
     while {[llength $spec]} {
         set type [lindex $spec 0]
         set spec [lrange $spec 1 end]
@@ -629,7 +630,14 @@ proc ::huddle::compile {spec data} {
                 }
             }
         
-            default {error "Invalid type: '$type'"}
+            default {
+                if {[info exists types(tagOfType:${type})]} {
+                    set tag $types(tagOfType:${type});
+	                return [$types(callback:$tag) create $data]
+                } else {
+                    error "Invalid type: '$type'"
+                }
+            }
         }
     }
 }
