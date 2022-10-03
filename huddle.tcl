@@ -556,6 +556,7 @@ proc huddle::jsondump {huddle_object {offset "  "} {newline "\n"} {begin ""}} {
 # etc..
 
 proc huddle::compile {spec data} {
+    variable types
     while {[llength $spec]} {
         set type [lindex $spec 0]
         set spec [lrange $spec 1 end]
@@ -606,11 +607,11 @@ proc huddle::compile {spec data} {
                 }
             }
         
-            bool {
+            boolean {
                 if {$data} {
-                    return [wrap [list bool true]]
+                    return [wrap [list b true]]
                 } else {
-                    return [wrap [list bool false]]
+                    return [wrap [list b false]]
                 }
             }
         
@@ -630,8 +631,90 @@ proc huddle::compile {spec data} {
                 }
             }
         
-            default {error "Invalid type: '$type'"}
+            default {
+                if {[info exists types(tagOfType:${type})]} {
+                    set tag $types(tagOfType:${type});
+	                return [$types(callback:$tag) create $data]
+                } else {
+                    error "Invalid type: '$type'"
+                }
+            }
         }
+    }
+}
+
+# Performs depth-first traverse of the huddle structure, calling the
+# given visitor `callback` for each huddle node being visited.
+#
+# Container nodes are passed to the visitor callback before traversing
+# their subnodes. This way, the visitor may decide to cease diving
+# deeper for that container node.
+#
+# Arguments:
+#   callback - name of routine to be called on node visit
+#   node_var - name of the variable holding the node representation
+#   path - list of key tokens to the `node_var`
+#   args - remaining arguments to be passed to the callback
+#
+# Callback prototype should look like::
+#
+#   proc my_callback {node_var path args} { ... }
+#
+# The callback shall return a flat dictionary with the following keys:
+# - stop: Value of 1 will make the the visit traverse stop altogether
+# - ascend: stop traversing to subnode
+# - repack: Indicates that the node has been changed during the visit
+#   and shall be repacked into the huddle structure.
+proc huddle::Visit_node_depth_first {callback node_var path args} {
+    namespace upvar [namespace current] types types;
+    upvar 1 $node_var node;
+
+    set tag [lindex $node 0];
+
+    if {![info exists types(type:$tag)] || ![info exists types(isContainer:$tag)]} {
+        error "Unrecognized huddle node type: '$tag'";
+    } elseif { $types(isContainer:$tag) } {
+        # call the visitor/callback on the container node first
+        # (before calling it for its sub-nodes)
+        set resp [eval ${callback} node \$path ${args}];
+
+        # see if to traverse deeper (and hence if to visit sub-nodes)
+        if {[dict get $resp "ascend"] != 1 || [dict get $resp "stop"] != 1} {
+            set repack 0; # flag to indicate the container value changed
+            set value [lindex $node 1];
+            foreach item [$types(callback:$tag) items $value] {
+                lassign $item key subnode;
+                set subpath ${path};
+                lappend subpath $key;
+
+                # call the visitor/callback (for a sub-node)
+                set subresp [eval Visit_node_depth_first \${callback} subnode \$subpath ${args}];
+
+                # see if the sub-node changed (and, if so, re-pack it into the container
+                # node)
+                if {[dict get ${subresp} "repack"] == 1} {
+                    $types(callback:$tag) delete_subnode_but_not_key value $key
+                    $types(callback:$tag) set value $key $subnode
+                    set repack 1;
+                }
+
+                # see if to stop processing immediately
+                if {[dict get ${subresp} "stop"] == 1} {
+                    dict set resp "stop" 1;
+                    break;
+                }
+            }
+
+            if {$repack == 1} {
+                lset node 1 $value;
+                dict set resp "repack" 1;
+            }
+        }
+
+        return $resp;
+    } else {
+        # delegate response to the visitor/callback
+        return [eval ${callback} node \$path ${args}];
     }
 }
 
