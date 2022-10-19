@@ -640,7 +640,29 @@ test huddle-13.3.9.1 "test of huddle compile (custom type)" -setup {
     array unset bak_types
 } -result {1}
 
-# Tests od `huddle::Visit_node_depth_first`
+# Tests of `huddle::call`
+# -----------------------
+test huddle-13.4.1.1 "test of huddle call (dict: create)" -body {
+    huddle::call [dict get $huddle::types::dict::settings tag] create;
+} -result {HUDDLE {D {}}}
+
+test huddle-13.4.1.2.1 "test of huddle call (dict: exists)" -body {
+    set h {HUDDLE {D {a {s 1} b {s 2} c {s 3}}}};
+    huddle::call [dict get $huddle::types::dict::settings tag] exists \
+        [huddle::get_src $h] b;
+} -result {1}
+
+test huddle-13.4.1.2.2 "test of huddle call (dict: exists)" -body {
+    set h {HUDDLE {D {a {s 1} b {s 2} c {s 3}}}};
+    huddle::call [dict get $huddle::types::dict::settings tag] exists \
+        [huddle::get_src $h] bb;
+} -result {0}
+
+test huddle-13.4.2.1 "test of huddle call (create list)" -body {
+    huddle::call [dict get $huddle::types::list::settings tag] list;
+} -result {HUDDLE {L {}}}
+
+# Tests of `huddle::Visit_node_depth_first`
 # -----------------------------------------
 
 # a callback that replicates Huddle structure

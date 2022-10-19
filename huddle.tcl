@@ -175,9 +175,9 @@ proc ::huddle::strip_node {node} {
     }
 }
 
-proc ::huddle::call {tag cmd arguments} {
+proc ::huddle::call {tag cmd args} {
     variable types
-    return [$types(callback:$tag) $cmd {*}$arguments]
+    return [eval $types(callback:$tag) $cmd $args]
 }
 
 proc ::huddle::combine {args} {
