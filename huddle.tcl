@@ -500,17 +500,7 @@ proc ::huddle::jsondump {huddle_object {offset "  "} {newline "\n"} {begin ""}} 
             set data [huddle get_stripped $huddle_object]
 
             # JSON permits only oneline string
-            set data [string map {
-                    \n \\n
-                    \t \\t
-                    \r \\r
-                    \b \\b
-                    \f \\f
-                    \\ \\\\
-                    \" \\\"
-                    / \\/
-                } $data
-            ]
+            set data [string map {\n \\n \t \\t \r \\r \b \\b \f \\f \\ \\\\ \" \\\" / \\/} $data]
 	    return "\"$data\""
         }
         list {
