@@ -176,9 +176,9 @@ proc huddle::strip_node {node} {
     }
 }
 
-proc huddle::call {tag cmd arguments} {
+proc huddle::call {tag cmd args} {
     variable types
-    return [$types(callback:$tag) $cmd {*}$arguments]
+    return [eval $types(callback:$tag) $cmd $args]
 }
 
 proc huddle::combine {args} {
@@ -501,17 +501,7 @@ proc huddle::jsondump {huddle_object {offset "  "} {newline "\n"} {begin ""}} {
             set data [[namespace current] get_stripped $huddle_object]
 
             # JSON permits only oneline string
-            set data [string map {
-                    \n \\n
-                    \t \\t
-                    \r \\r
-                    \b \\b
-                    \f \\f
-                    \\ \\\\
-                    \" \\\"
-                    / \\/
-                } $data
-            ]
+            set data [string map {\n \\n \t \\t \r \\r \b \\b \f \\f \\ \\\\ \" \\\" / \\/} $data]
 	    return "\"$data\""
         }
         list {

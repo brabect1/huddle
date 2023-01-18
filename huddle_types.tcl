@@ -19,6 +19,7 @@ namespace eval huddle::types {
         
         # strip from the tagged-content
         proc strip {src} {
+            set result {}
             foreach {key subnode} $src {
                 lappend result $key [strip_node $subnode]
             }
